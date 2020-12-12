@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
+import React, { useEffect } from "react";
 // nodejs library that concatenates classes
 import classNames from "classnames";
 // react plugin used to create charts
@@ -50,11 +50,75 @@ import {
   chartExample4,
 } from "variables/charts.js";
 
-function Dashboard(props) {
-  const [bigChartData, setbigChartData] = React.useState("data1");
-  const setBgChartData = (name) => {
-    setbigChartData(name);
+// curried function that takes the data as an input
+// returns the function that returns the chart data
+const createChartData = (data) => (canvas) => {
+  let ctx = canvas.getContext("2d");
+
+  let gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
+
+  gradientStroke.addColorStop(1, "rgba(29,140,248,0.2)");
+  gradientStroke.addColorStop(0.4, "rgba(29,140,248,0.0)");
+  gradientStroke.addColorStop(0, "rgba(29,140,248,0)"); //blue colors
+
+  return {
+    labels: [
+      "JAN",
+      "FEB",
+      "MAR",
+      "APR",
+      "MAY",
+      "JUN",
+      "JUL",
+      "AUG",
+      "SEP",
+      "OCT",
+      "NOV",
+      "DEC",
+    ],
+    datasets: [
+      {
+        label: "My First dataset",
+        fill: true,
+        backgroundColor: gradientStroke,
+        borderColor: "#1f8ef1",
+        borderWidth: 2,
+        borderDash: [],
+        borderDashOffset: 0.0,
+        pointBackgroundColor: "#1f8ef1",
+        pointBorderColor: "rgba(255,255,255,0)",
+        pointHoverBackgroundColor: "#1f8ef1",
+        pointBorderWidth: 20,
+        pointHoverRadius: 4,
+        pointHoverBorderWidth: 15,
+        pointRadius: 4,
+        data,
+      },
+    ],
   };
+}
+
+function Dashboard(props) {
+  const [bigChartData, setBigChartData] = React.useState("data1");
+  // stores the fetched chart data
+  const [chartData, setChartData] = React.useState([]);
+
+  // fetches the data for the chart
+  const fetchData = async () => {
+    const response = await fetch('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&outputsize=full&apikey=demo');
+    const json = await response.json();
+
+    const datePoints = json['Time Series (5min)'];
+    const timeSeries = Object.values(datePoints).map(point => point['4. close']);
+
+    setChartData(timeSeries);
+  }
+
+  // effect runs on mount of the component, calls the fetchData function
+  useEffect(() => {
+   fetchData();
+  }, []);
+
   return (
     <>
       <div className="content">
@@ -80,7 +144,7 @@ function Dashboard(props) {
                         color="info"
                         id="0"
                         size="sm"
-                        onClick={() => setBgChartData("data1")}
+                        onClick={() => setBigChartData("data1")}
                       >
                         <span className="d-none d-sm-block d-md-block d-lg-block d-xl-block">
                           Accounts
@@ -97,7 +161,7 @@ function Dashboard(props) {
                         className={classNames("btn-simple", {
                           active: bigChartData === "data2",
                         })}
-                        onClick={() => setBgChartData("data2")}
+                        onClick={() => setBigChartData("data2")}
                       >
                         <span className="d-none d-sm-block d-md-block d-lg-block d-xl-block">
                           Purchases
@@ -114,7 +178,7 @@ function Dashboard(props) {
                         className={classNames("btn-simple", {
                           active: bigChartData === "data3",
                         })}
-                        onClick={() => setBgChartData("data3")}
+                        onClick={() => setBigChartData("data3")}
                       >
                         <span className="d-none d-sm-block d-md-block d-lg-block d-xl-block">
                           Sessions
@@ -130,7 +194,7 @@ function Dashboard(props) {
               <CardBody>
                 <div className="chart-area">
                   <Line
-                    data={chartExample1[bigChartData]}
+                    data={createChartData(chartData)}
                     options={chartExample1.options}
                   />
                 </div>

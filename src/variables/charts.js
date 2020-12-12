@@ -83,19 +83,6 @@ let chartExample1 = {
     gradientStroke.addColorStop(0.4, "rgba(29,140,248,0.0)");
     gradientStroke.addColorStop(0, "rgba(29,140,248,0)"); //blue colors
 
-    // i want the result of this (time_series) to go inside data below instead of 
-    // data:  [100, 70, 90, 70, 85, 60, 75, 60, 90, 80, 110, 100]
-    // fetch('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&outputsize=full&apikey=demo')
-    // .then(response => response.json())
-    // .then(body => {
-    //   let date_points = body['Time Series (5min)'];
-    //   let time_series = []
-    //   for (var entry in date_points) {
-    //     time_series.push(body['Time Series (5min)'][entry]['4. close']);
-    //   }    
-    //   return time_series;
-    // });
-
     return {
       labels: [
         "JAN",
